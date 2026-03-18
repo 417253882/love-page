@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>给熊雅妮 ❤️</title>
+
+<style>
+body {
+  margin: 0;
+  overflow: hidden;
+  font-family: Arial;
+  color: white;
+  text-align: center;
+}
+
+#stars {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  z-index: -1;
+}
+
+#app {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+
+.center {
+  position: absolute;
+  top: 30%;
+  width: 100%;
+}
+
+img {
+  width: 220px;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+button {
+  padding: 12px 25px;
+  font-size: 18px;
+  margin: 15px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+}
+
+#yes {
+  background: #ff4d6d;
+  color: white;
+}
+
+#no {
+  position: absolute;
+  background: gray;
+  color: white;
+}
+
+.heart {
+  position: fixed;
+  bottom: 0;
+  animation: floatUp 5s linear infinite;
+}
+
+@keyframes floatUp {
+  100% {transform: translateY(-100vh);}
+}
+
+.fade {
+  animation: fadeIn 1s;
+}
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="stars"></canvas>
+<div id="app"></div>
+
+<audio id="bgm" loop>
+  <source src="https://www.w3schools.com/html/horse.mp3">
+</audio>
+
+<script>
+const app = document.getElementById("app");
+
+// 星空
+const canvas = document.getElementById("stars");
+const ctx = canvas.getContext("2d");
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+let stars = Array.from({length:200},()=>({
+  x:Math.random()*window.innerWidth,
+  y:Math.random()*window.innerHeight,
+  r:Math.random()*2
+}));
+
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="white";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+// 首页
+function showHome(){
+  app.innerHTML=`
+    <div class="center">
+      <h1 id="text"></h1>
+      <div id="buttons" style="display:none;">
+        <button id="yes">愿意 ❤️</button>
+        <button id="no">再想想 😏</button>
+      </div>
+    </div>
+  `;
+  typing();
+}
+
+const message="其实我有句话想对你说...";
+function typing(){
+  let i=0;
+  const el=document.getElementById("text");
+  function loop(){
+    if(i<message.length){
+      el.innerHTML+=message[i++];
+      setTimeout(loop,80);
+    }else{
+      setTimeout(showButtons,500);
+    }
+  }
+  loop();
+}
+
+function showButtons(){
+  document.getElementById("text").innerHTML="熊雅妮，你愿意一直陪着我吗？❤️";
+  document.getElementById("buttons").style.display="block";
+
+  document.getElementById("yes").onclick=startStory;
+  document.getElementById("no").onmouseover=function(){
+    this.style.left=Math.random()*(window.innerWidth-100)+"px";
+    this.style.top=Math.random()*(window.innerHeight-50)+"px";
+  };
+}
+
+// 剧情
+const story=[
+  "还记得那天吗？",
+  "<img src='love.jpg'>",
+  "那一刻，我真的很紧张",
+  "但我更怕错过你",
+  "熊雅妮 ❤️",
+  "你对我来说真的很重要",
+  "所以今天",
+  "我想认真说一次",
+  "我喜欢你，很久了 ❤️"
+];
+
+let step=0;
+
+function startStory(){
+  document.getElementById("bgm").play().catch(()=>{});
+
+  app.innerHTML=`
+    <div class="center fade">
+      <h1 id="storyText"></h1>
+      <p>点击继续 ❤️</p>
+    </div>
+  `;
+
+  app.onclick=next;
+  step=0;
+  next();
+}
+
+function next(){
+  if(step<story.length){
+    document.getElementById("storyText").innerHTML=story[step++];
+  }else{
+    finalScene();
+  }
+}
+
+// 结尾
+function finalScene(){
+  app.onclick=null;
+
+  app.innerHTML=`
+    <div class="center fade">
+      <h1 style="font-size:40px;">熊雅妮 ❤️ 我喜欢你</h1>
+      <h2 id="days"></h2>
+      <p id="loveText"></p>
+    </div>
+  `;
+
+  startHearts();
+  showDays();
+  loveLoop();
+}
+
+// 爱心
+function startHearts(){
+  setInterval(()=>{
+    let h=document.createElement("div");
+    h.className="heart";
+    h.innerHTML="❤️";
+    h.style.left=Math.random()*100+"vw";
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),5000);
+  },200);
+}
+
+// 天数
+function showDays(){
+  let start=new Date("2016-12-19");
+  let now=new Date();
+  let d=Math.floor((now-start)/(1000*60*60*24));
+  document.getElementById("days").innerHTML=
+    "我们已经一起走过 "+d+" 天 ❤️";
+}
+
+// 情话
+const words=[
+  "遇见你是我最大的幸运 ❤️",
+  "我真的很在乎你",
+  "以后也想一直陪着你",
+  "这一生都想和你在一起"
+];
+
+let w=0;
+function loveLoop(){
+  setInterval(()=>{
+    document.getElementById("loveText").innerHTML=words[w];
+    w=(w+1)%words.length;
+  },2000);
+}
+
+showHome();
+</script>
+
+</body>
+</html>
