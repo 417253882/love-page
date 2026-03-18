@@ -6,140 +6,194 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no">
 
-<!-- 微信分享卡片信息 -->
-<meta property="og:title" content="熊雅妮 ❤️ 我有话想对你说">
-<meta property="og:description" content="点击打开，这是我为你做的专属惊喜网页">
-<meta property="og:image" content="love.jpg">
-<meta property="og:type" content="website">
-
 <style>
 body {
-  margin: 0;
-  overflow: hidden;
-  font-family: Arial;
-  color: white;
-  text-align: center;
-  background: black;
+  margin:0;
+  overflow:hidden;
+  font-family:Arial, sans-serif;
+  color:white;
+  text-align:center;
+  background:black;
 }
 
-/* 星空画布 */
+/* 星空背景全屏 */
 #stars {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  z-index:-1;
 }
 
-/* 主容器 */
-#app {
-  width: 100%;
-  height: 100vh;
-  position: relative;
-}
-
-/* 居中内容 */
+/* 中心内容 */
 .center {
-  position: absolute;
-  top: 30%;
-  width: 100%;
-  opacity: 0;
-  animation: fadeIn 1.5s forwards;
+  position:absolute;
+  top:30%;
+  width:100%;
+  animation:fadeIn 1s;
 }
 
-img {
-  width: 220px;
-  border-radius: 12px;
-  margin-top: 20px;
-  box-shadow: 0 0 20px rgba(255,255,255,0.6);
+/* 打字动画 */
+@keyframes fadeIn {
+  from{opacity:0;} to{opacity:1;}
 }
 
+/* 按钮容器 */
+#buttons {
+  margin-top:20px;
+  position:relative; /* 容器相对定位，按钮可用绝对定位随机移动 */
+  height:60px; /* 初始高度保证容器占位 */
+}
+
+/* 按钮样式 */
 button {
-  padding: 12px 25px;
-  font-size: 18px;
-  margin: 15px;
-  border-radius: 12px;
-  border: none;
-  cursor: pointer;
+  padding:10px 20px;
+  margin:0 10px;
+  font-size:18px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  transition: all 0.3s;
+  position:absolute;
+}
+button#yes { background-color:#ff4d6d; color:white; }
+button#no { background-color:#555; color:white; }
+button:hover { transform: scale(1.1); }
+
+/* 轮播图片 */
+#slideImg {
+  width:320px;
+  max-width:85%;
+  border-radius:16px;
+  box-shadow:0 0 30px rgba(255,100,150,0.8);
+  transition: all 1s ease;
 }
 
-#yes { background: #ff4d6d; color:white; }
-#no { position:absolute; background:gray; color:white; }
-
+/* 爱心动画，放最顶层 */
 .heart {
-  position: fixed;
-  bottom: 0;
-  animation: floatUp 5s linear infinite;
+  position:fixed;
+  bottom:0;
+  font-size:24px;
+  z-index:9999;
+  animation:floatUp 5s linear infinite;
 }
 
-@keyframes floatUp { 100% {transform: translateY(-100vh);} }
-@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+@keyframes floatUp {
+  0% { transform:translateY(0); opacity:1; }
+  100% { transform:translateY(-100vh); opacity:0; }
+}
 
+/* 电影级结尾 */
+#finalOverlay {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:black;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  opacity:0;
+  z-index:10;
+}
+
+.finalFade {
+  animation: fadeToBlack 2s forwards;
+}
+
+@keyframes fadeToBlack {
+  to { opacity:1; }
+}
+
+.finalTextBig {
+  font-size:42px;
+  opacity:0;
+  animation: fadeInText 2s forwards;
+}
+
+.finalTextSmall {
+  font-size:26px;
+  margin-top:15px;
+  opacity:0;
+  animation: fadeInText 2s forwards;
+  animation-delay:1s;
+}
+
+@keyframes fadeInText {
+  to { opacity:1; transform: scale(1.05); }
+}
 </style>
 </head>
 
 <body>
-
 <canvas id="stars"></canvas>
 <div id="app"></div>
 
-<!-- 音乐 -->
-<audio id="bgm" loop preload="auto">
+<audio id="bgm" loop>
   <source src="music.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-const app = document.getElementById("app");
-const audio = document.getElementById("bgm");
-
-// ================= 星空 =================
+// ===== 星空全屏 =====
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
-function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight;}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
 
-let stars = Array.from({length:200},()=>({x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight, r:Math.random()*2}));
-function drawStars(){ 
-  ctx.clearRect(0,0,canvas.width,canvas.height); 
-  ctx.fillStyle="white"; 
-  stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}); 
-  requestAnimationFrame(drawStars);
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 }
-drawStars();
+resize();
+window.addEventListener("resize", resize);
 
-// ================= 微信点击触发音乐 =================
-function playMusic() {
-  audio.play().catch(() => {
-    const handler = () => { audio.play(); document.removeEventListener('click', handler); };
-    document.addEventListener('click', handler);
+let stars = Array.from({length:200}, ()=>({
+  x: Math.random()*window.innerWidth,
+  y: Math.random()*window.innerHeight,
+  r: Math.random()*2
+}));
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle="white";
+  stars.forEach(s=>{
+    ctx.beginPath();
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+  });
+  requestAnimationFrame(draw);
+}
+draw();
+
+// ===== 音乐 =====
+const audio = document.getElementById("bgm");
+function playMusic(){
+  audio.play().catch(()=>{
+    document.addEventListener("click", ()=>audio.play(), {once:true});
   });
 }
 
-// ================= 首页（开场动画） =================
-function showHome(){
-  app.innerHTML = `
-    <div class="center" id="intro">
-      <h1>熊雅妮 ❤️</h1>
-      <h2>一起来看这个小惊喜吧</h2>
-      <p>点击屏幕开始 ❤️</p>
-    </div>
-  `;
-  document.getElementById("intro").style.animation = "fadeIn 1.5s forwards";
+const app = document.getElementById("app");
 
-  // 用户点击首页时触发音乐和打字剧情
-  const intro = document.getElementById("intro");
-  intro.onclick = () => {
-    playMusic();       // 微信/手机友好触发音乐
-    startTyping();     // 进入打字剧情
-  };
+// ===== 打字 =====
+function typing(callback){
+  const msg = "其实这些话，我想说很久了...";
+  const textEl = document.getElementById("text");
+  let i=0;
+  function t(){
+    if(i<msg.length){
+      textEl.innerHTML += msg[i++];
+      setTimeout(t, 60);
+    } else {
+      if(callback) callback();
+    }
+  }
+  t();
 }
 
-// 打字剧情
-const message="其实我有句话想对你说...";
-function startTyping(){
-  app.onclick = null;
+// ===== 首页 + 按钮 =====
+function showHome(){
   app.innerHTML = `
     <div class="center">
       <h1 id="text"></h1>
@@ -149,107 +203,150 @@ function startTyping(){
       </div>
     </div>
   `;
-  let i = 0;
-  const el = document.getElementById("text");
-  function loop(){ 
-    if(i<message.length){ el.innerHTML += message[i++]; setTimeout(loop,80); } 
-    else { setTimeout(showButtons,500); } 
-  }
-  loop();
+
+  typing(()=>{
+    const btnsDiv = document.getElementById("buttons");
+    btnsDiv.style.display = "block";
+
+    const yesBtn = document.getElementById("yes");
+    const noBtn = document.getElementById("no");
+
+    // 初始按钮紧贴文字下方
+    yesBtn.style.position = "relative";
+    yesBtn.style.left = "0px";
+    yesBtn.style.top = "0px";
+
+    noBtn.style.position = "relative";
+    noBtn.style.left = "20px"; // 间隔
+    noBtn.style.top = "0px";
+
+    yesBtn.onclick = ()=>{
+      playMusic();
+      startSlider();
+    };
+
+    // 点击“再想想”按钮随机移动全屏范围
+    noBtn.onclick = function(){
+      const btn = this;
+      const maxX = window.innerWidth - btn.offsetWidth;
+      const maxY = window.innerHeight - btn.offsetHeight;
+      const x = Math.random() * maxX;
+      const y = Math.random() * maxY;
+      btn.style.position = "fixed";
+      btn.style.left = x + "px";
+      btn.style.top = y + "px";
+    };
+  });
 }
 
-// 按钮出现
-function showButtons(){
-  document.getElementById("text").innerHTML="熊雅妮，你愿意一直陪着我吗？❤️";
-  const btns=document.getElementById("buttons"); 
-  btns.style.display="block";
-  document.getElementById("yes").onclick=startStory;
-  document.getElementById("no").onmouseover=function(){
-    this.style.left=Math.random()*(window.innerWidth-100)+"px";
-    this.style.top=Math.random()*(window.innerHeight-50)+"px";
-  };
-}
-
-// 剧情
-const story=[
-  "还记得那天吗？",
-  "<img src='love.jpg'>",
-  "那一刻，我真的很紧张",
-  "但我更怕错过你",
-  "熊雅妮 ❤️",
-  "你对我来说真的很重要",
-  "所以今天",
-  "我想认真说一次",
-  "我喜欢你，很久了 ❤️"
+// ===== 图片数据 =====
+const slides = [
+  "love1.jpg","love2.jpg","love3.jpg","love4.jpg","love5.jpg",
+  "love6.jpg","love7.jpg","love8.jpg","love9.jpg","love10.jpg",
+  "love11.jpg","love12.jpg","love13.jpg","love14.jpg","love15.jpg"
 ];
-let step=0;
 
-function startStory(){
-  app.innerHTML=`
-    <div class="center fade">
-      <h1 id="storyText"></h1>
-      <p>点击屏幕继续 ❤️</p>
+const texts = [
+  "第一次见你 ❤️","那天我有点紧张",
+  "你真的很好看","也很温柔",
+  "慢慢地","我开始在意你",
+  "和你聊天","成了每天的期待",
+  "见到你","就会开心",
+  "你的一举一动","都让我心动",
+  "所以今天","我想认真说一次",
+  "我喜欢你 ❤️"," "
+];
+
+let index = 0;
+let timer = null;
+
+// ===== 图片轮播 =====
+function startSlider(){
+  index = 0;
+  app.innerHTML = `
+    <div class="center">
+      <img id="slideImg">
+      <h2 id="text2"></h2>
     </div>
   `;
-  app.onclick=next;
-  step=0;
+  timer = setInterval(nextSlide, 1500);
 }
 
-function next(){
-  if(step<story.length){ document.getElementById("storyText").innerHTML=story[step++]; }
-  else{ finalScene(); }
+function nextSlide(){
+  if(index >= slides.length){
+    clearInterval(timer);
+    finalScene();
+    return;
+  }
+
+  const img = document.getElementById("slideImg");
+  const text = document.getElementById("text2");
+
+  img.src = slides[index];
+  text.innerHTML = texts[index] || "";
+
+  img.style.opacity = 0;
+  img.style.transform = "scale(1)";
+  requestAnimationFrame(()=>{
+    img.style.opacity = 1;
+    img.style.transform = "scale(1.1)";
+  });
+
+  index++;
 }
 
-// 结尾
+// ===== 电影级结尾 =====
 function finalScene(){
-  app.onclick=null;
-  app.innerHTML=`
-    <div class="center fade">
-      <h1 style="font-size:40px;">熊雅妮 ❤️ 我喜欢你</h1>
-      <h2 id="days"></h2>
+  const img = document.getElementById("slideImg");
+  img.style.transition = "2s";
+  img.style.filter = "blur(8px) brightness(0.3)";
+  img.style.transform = "scale(1.2)";
+
+  setTimeout(()=>{
+    const overlay = document.createElement("div");
+    overlay.id = "finalOverlay";
+    overlay.innerHTML = `
+      <h1 class="finalTextBig">熊雅妮 ❤️</h1>
+      <h2 class="finalTextSmall">我喜欢你</h2>
       <p id="loveText"></p>
-    </div>
-  `;
-  startHearts();
-  showDays();
-  loveLoop();
+    `;
+    document.body.appendChild(overlay);
+    setTimeout(()=> overlay.classList.add("finalFade"),100);
+
+    hearts();
+    words();
+  },2000);
 }
 
-// 爱心
-function startHearts(){
+// ===== 爱心 =====
+function hearts(){
   setInterval(()=>{
-    let h=document.createElement("div");
-    h.className="heart";
-    h.innerHTML="❤️";
-    h.style.left=Math.random()*100+"vw";
+    let h = document.createElement("div");
+    h.className = "heart";
+    h.innerHTML = "❤️";
+    h.style.left = Math.random()*100 + "vw";
     document.body.appendChild(h);
     setTimeout(()=>h.remove(),5000);
   },200);
 }
 
-// 天数
-function showDays(){
-  let start=new Date("2016-12-19");
-  let now=new Date();
-  let d=Math.floor((now-start)/(1000*60*60*24));
-  document.getElementById("days").innerHTML="我们已经一起走过 "+d+" 天 ❤️";
-}
-
-// 情话轮播
-const words=[
+// ===== 情话 =====
+const w=[
   "遇见你是我最大的幸运 ❤️",
-  "我真的很在乎你",
+  "我真的很喜欢你",
   "以后也想一直陪着你",
-  "这一生都想和你在一起"
+  "我们一起走下去吧 ❤️"
 ];
-let w=0;
-function loveLoop(){
-  setInterval(()=>{document.getElementById("loveText").innerHTML=words[w]; w=(w+1)%words.length;},2000);
+let wi=0;
+function words(){
+  setInterval(()=>{
+    document.getElementById("loveText").innerHTML = w[wi];
+    wi = (wi+1)%w.length;
+  },2000);
 }
 
-// 启动开场
+// ===== 启动首页 =====
 showHome();
-
 </script>
 </body>
 </html>
