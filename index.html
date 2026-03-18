@@ -2,9 +2,15 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
+<title>给熊雅妮 ❤️</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="format-detection" content="telephone=no">
-<title>给熊雅妮 ❤️</title>
+
+<!-- 微信分享卡片信息 -->
+<meta property="og:title" content="熊雅妮 ❤️ 我有话想对你说">
+<meta property="og:description" content="点击打开，这是我为你做的专属惊喜网页">
+<meta property="og:image" content="love.jpg">
+<meta property="og:type" content="website">
 
 <style>
 body {
@@ -13,34 +19,40 @@ body {
   font-family: Arial;
   color: white;
   text-align: center;
+  background: black;
 }
 
+/* 星空画布 */
 #stars {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: black;
   z-index: -1;
 }
 
+/* 主容器 */
 #app {
   width: 100%;
   height: 100vh;
   position: relative;
 }
 
+/* 居中内容 */
 .center {
   position: absolute;
   top: 30%;
   width: 100%;
+  opacity: 0;
+  animation: fadeIn 1.5s forwards;
 }
 
 img {
   width: 220px;
   border-radius: 12px;
   margin-top: 20px;
+  box-shadow: 0 0 20px rgba(255,255,255,0.6);
 }
 
 button {
@@ -52,16 +64,8 @@ button {
   cursor: pointer;
 }
 
-#yes {
-  background: #ff4d6d;
-  color: white;
-}
-
-#no {
-  position: absolute;
-  background: gray;
-  color: white;
-}
+#yes { background: #ff4d6d; color:white; }
+#no { position:absolute; background:gray; color:white; }
 
 .heart {
   position: fixed;
@@ -69,17 +73,9 @@ button {
   animation: floatUp 5s linear infinite;
 }
 
-@keyframes floatUp {
-  100% {transform: translateY(-100vh);}
-}
+@keyframes floatUp { 100% {transform: translateY(-100vh);} }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
 
-.fade {
-  animation: fadeIn 1s;
-}
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
-}
 </style>
 </head>
 
@@ -94,49 +90,44 @@ button {
 
 <script>
 const app = document.getElementById("app");
+const audio = document.getElementById("bgm");
 
-// 星空
+// ================= 星空 =================
 const canvas = document.getElementById("stars");
 const ctx = canvas.getContext("2d");
-
-function resizeCanvas() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
+function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight;}
 resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
-let stars = Array.from({length:200},()=>({
-  x:Math.random()*window.innerWidth,
-  y:Math.random()*window.innerHeight,
-  r:Math.random()*2
-}));
-
-function drawStars(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle="white";
-  stars.forEach(s=>{
-    ctx.beginPath();
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
-    ctx.fill();
-  });
-  requestAnimationFrame(drawStars);
-}
+let stars = Array.from({length:200},()=>({x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight, r:Math.random()*2}));
+function drawStars(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="white"; stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}); requestAnimationFrame(drawStars);}
 drawStars();
 
-function startMusic() {
-  const audio = document.getElementById("bgm");
-
-  function play() {
-    audio.play().catch(()=>{});
-    document.removeEventListener("touchstart", play);
-  }
-
-  document.addEventListener("touchstart", play);
+// ================= 自动播放音乐 =================
+function playMusic() {
+  audio.play().catch(()=>{
+    document.addEventListener("touchstart",()=>audio.play(), {once:true});
+  });
 }
 
-// 首页
+// ================= 首页（开场动画） =================
 function showHome(){
+  app.innerHTML=`
+    <div class="center" id="intro">
+      <h1>熊雅妮 ❤️</h1>
+      <h2>一起来看这个小惊喜吧</h2>
+      <p>点击屏幕开始 ❤️</p>
+    </div>
+  `;
+  document.getElementById("intro").style.animation = "fadeIn 1.5s forwards";
+  app.onclick = startTyping;
+  playMusic(); // 先触发音乐
+}
+
+// 打字剧情
+const message="其实我有句话想对你说...";
+function startTyping(){
+  app.onclick=null;
   app.innerHTML=`
     <div class="center">
       <h1 id="text"></h1>
@@ -146,28 +137,16 @@ function showHome(){
       </div>
     </div>
   `;
-  typing();
-}
-
-const message="其实我有句话想对你说...";
-function typing(){
   let i=0;
   const el=document.getElementById("text");
-  function loop(){
-    if(i<message.length){
-      el.innerHTML+=message[i++];
-      setTimeout(loop,80);
-    }else{
-      setTimeout(showButtons,500);
-    }
-  }
+  function loop(){ if(i<message.length){ el.innerHTML+=message[i++]; setTimeout(loop,80);} else{setTimeout(showButtons,500);} }
   loop();
 }
 
+// 按钮出现
 function showButtons(){
   document.getElementById("text").innerHTML="熊雅妮，你愿意一直陪着我吗？❤️";
-  document.getElementById("buttons").style.display="block";
-
+  const btns=document.getElementById("buttons"); btns.style.display="block";
   document.getElementById("yes").onclick=startStory;
   document.getElementById("no").onmouseover=function(){
     this.style.left=Math.random()*(window.innerWidth-100)+"px";
@@ -187,36 +166,27 @@ const story=[
   "我想认真说一次",
   "我喜欢你，很久了 ❤️"
 ];
-
 let step=0;
 
 function startStory(){
-  document.getElementById("bgm").play().catch(()=>{});
-
   app.innerHTML=`
     <div class="center fade">
       <h1 id="storyText"></h1>
-      <p>点击继续 ❤️</p>
+      <p>点击屏幕继续 ❤️</p>
     </div>
   `;
-
   app.onclick=next;
   step=0;
-  next();
 }
 
 function next(){
-  if(step<story.length){
-    document.getElementById("storyText").innerHTML=story[step++];
-  }else{
-    finalScene();
-  }
+  if(step<story.length){ document.getElementById("storyText").innerHTML=story[step++]; }
+  else{ finalScene(); }
 }
 
 // 结尾
 function finalScene(){
   app.onclick=null;
-
   app.innerHTML=`
     <div class="center fade">
       <h1 style="font-size:40px;">熊雅妮 ❤️ 我喜欢你</h1>
@@ -224,7 +194,6 @@ function finalScene(){
       <p id="loveText"></p>
     </div>
   `;
-
   startHearts();
   showDays();
   loveLoop();
@@ -247,26 +216,22 @@ function showDays(){
   let start=new Date("2016-12-19");
   let now=new Date();
   let d=Math.floor((now-start)/(1000*60*60*24));
-  document.getElementById("days").innerHTML=
-    "我们已经一起走过 "+d+" 天 ❤️";
+  document.getElementById("days").innerHTML="我们已经一起走过 "+d+" 天 ❤️";
 }
 
-// 情话
+// 情话轮播
 const words=[
   "遇见你是我最大的幸运 ❤️",
   "我真的很在乎你",
   "以后也想一直陪着你",
   "这一生都想和你在一起"
 ];
-
 let w=0;
 function loveLoop(){
-  setInterval(()=>{
-    document.getElementById("loveText").innerHTML=words[w];
-    w=(w+1)%words.length;
-  },2000);
+  setInterval(()=>{document.getElementById("loveText").innerHTML=words[w]; w=(w+1)%words.length;},2000);
 }
 
+// 启动开场
 showHome();
 </script>
 
