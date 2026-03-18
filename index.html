@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="format-detection" content="telephone=no">
 <title>给熊雅妮 ❤️</title>
 
 <style>
@@ -122,6 +123,17 @@ function drawStars(){
   requestAnimationFrame(drawStars);
 }
 drawStars();
+
+function startMusic() {
+  const audio = document.getElementById("bgm");
+
+  function play() {
+    audio.play().catch(()=>{});
+    document.removeEventListener("touchstart", play);
+  }
+
+  document.addEventListener("touchstart", play);
+}
 
 // 首页
 function showHome(){
