@@ -84,7 +84,8 @@ button {
 <canvas id="stars"></canvas>
 <div id="app"></div>
 
-<audio id="bgm" loop>
+<!-- 音乐 -->
+<audio id="bgm" loop preload="auto">
   <source src="music.mp3" type="audio/mpeg">
 </audio>
 
@@ -100,19 +101,25 @@ resizeCanvas();
 window.addEventListener("resize", resizeCanvas);
 
 let stars = Array.from({length:200},()=>({x:Math.random()*window.innerWidth, y:Math.random()*window.innerHeight, r:Math.random()*2}));
-function drawStars(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle="white"; stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}); requestAnimationFrame(drawStars);}
+function drawStars(){ 
+  ctx.clearRect(0,0,canvas.width,canvas.height); 
+  ctx.fillStyle="white"; 
+  stars.forEach(s=>{ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}); 
+  requestAnimationFrame(drawStars);
+}
 drawStars();
 
-// ================= 自动播放音乐 =================
+// ================= 微信点击触发音乐 =================
 function playMusic() {
-  audio.play().catch(()=>{
-    document.addEventListener("touchstart",()=>audio.play(), {once:true});
+  audio.play().catch(() => {
+    const handler = () => { audio.play(); document.removeEventListener('click', handler); };
+    document.addEventListener('click', handler);
   });
 }
 
 // ================= 首页（开场动画） =================
 function showHome(){
-  app.innerHTML=`
+  app.innerHTML = `
     <div class="center" id="intro">
       <h1>熊雅妮 ❤️</h1>
       <h2>一起来看这个小惊喜吧</h2>
@@ -120,15 +127,20 @@ function showHome(){
     </div>
   `;
   document.getElementById("intro").style.animation = "fadeIn 1.5s forwards";
-  app.onclick = startTyping;
-  playMusic(); // 先触发音乐
+
+  // 用户点击首页时触发音乐和打字剧情
+  const intro = document.getElementById("intro");
+  intro.onclick = () => {
+    playMusic();       // 微信/手机友好触发音乐
+    startTyping();     // 进入打字剧情
+  };
 }
 
 // 打字剧情
 const message="其实我有句话想对你说...";
 function startTyping(){
-  app.onclick=null;
-  app.innerHTML=`
+  app.onclick = null;
+  app.innerHTML = `
     <div class="center">
       <h1 id="text"></h1>
       <div id="buttons" style="display:none;">
@@ -137,16 +149,20 @@ function startTyping(){
       </div>
     </div>
   `;
-  let i=0;
-  const el=document.getElementById("text");
-  function loop(){ if(i<message.length){ el.innerHTML+=message[i++]; setTimeout(loop,80);} else{setTimeout(showButtons,500);} }
+  let i = 0;
+  const el = document.getElementById("text");
+  function loop(){ 
+    if(i<message.length){ el.innerHTML += message[i++]; setTimeout(loop,80); } 
+    else { setTimeout(showButtons,500); } 
+  }
   loop();
 }
 
 // 按钮出现
 function showButtons(){
   document.getElementById("text").innerHTML="熊雅妮，你愿意一直陪着我吗？❤️";
-  const btns=document.getElementById("buttons"); btns.style.display="block";
+  const btns=document.getElementById("buttons"); 
+  btns.style.display="block";
   document.getElementById("yes").onclick=startStory;
   document.getElementById("no").onmouseover=function(){
     this.style.left=Math.random()*(window.innerWidth-100)+"px";
@@ -233,7 +249,7 @@ function loveLoop(){
 
 // 启动开场
 showHome();
-</script>
 
+</script>
 </body>
 </html>
