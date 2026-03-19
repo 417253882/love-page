@@ -114,10 +114,11 @@ button:hover { transform: scale(1.1); }
   animation: fadeInText 2s forwards;
 }
 
-.finalTextSmall {
+.days {
   font-size:26px;
   margin-top:15px;
   opacity:0;
+  transform:scale(0.9);
   animation: fadeInText 2s forwards;
   animation-delay:1s;
 }
@@ -154,16 +155,78 @@ let stars = Array.from({length:200}, ()=>({
   r: Math.random()*2
 }));
 
+//==动态流星🌠==
+let meteors = [];
+
+function createMeteor(){
+  // 从右上角附近随机生成
+  let x = Math.random() * window.innerWidth * 0.5 + window.innerWidth * 0.3; // 右半屏
+  let y = Math.random() * window.innerHeight * 0.5; // 上半屏
+
+  let speed = 6 + Math.random() * 4; // 流星速度
+  let angle = Math.PI * 0.75; // 135度，向左下方（x-方向, y+方向）
+
+  meteors.push({
+    x,
+    y,
+    len: 80 + Math.random() * 50,
+    dx: Math.cos(angle) * speed,
+    dy: Math.sin(angle) * speed,
+    opacity: 1
+  });
+}
+
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  // ⭐ 星星
   ctx.fillStyle="white";
   stars.forEach(s=>{
     ctx.beginPath();
     ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
     ctx.fill();
   });
+
+  // 🌠 流星
+meteors.forEach((m, i)=>{
+    ctx.beginPath();
+    let gradient = ctx.createLinearGradient(
+      m.x, m.y,
+      m.x + m.len * (-m.dx/m.dy), // 保持方向比例
+      m.y + m.len
+    );
+    gradient.addColorStop(0, "rgba(255,255,255,"+m.opacity+")");
+    gradient.addColorStop(1, "rgba(255,255,255,0)");
+
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 2;
+
+    ctx.moveTo(m.x, m.y);
+    ctx.lineTo(m.x + m.dx * m.len/Math.sqrt(m.dx*m.dx + m.dy*m.dy),
+               m.y + m.dy * m.len/Math.sqrt(m.dx*m.dx + m.dy*m.dy));
+    ctx.stroke();
+
+    // 移动
+    m.x += m.dx;
+    m.y += m.dy;
+
+    // 逐渐消失
+    m.opacity -= 0.01;
+
+    // 删除屏幕外或消失的流星
+    if(m.opacity <= 0 || m.x < 0 || m.y > window.innerHeight){
+        meteors.splice(i,1);
+    }
+});
+
   requestAnimationFrame(draw);
 }
+
+setInterval(()=>{
+  if(Math.random() < 0.6){ // 出现概率
+    createMeteor();
+  }
+}, 1500);
 draw();
 
 // ===== 音乐 =====
@@ -306,14 +369,15 @@ function finalScene(){
     const overlay = document.createElement("div");
     overlay.id = "finalOverlay";
     overlay.innerHTML = `
-      <h1 class="finalTextBig">熊雅妮 ❤️</h1>
-      <h2 class="finalTextSmall">我喜欢你</h2>
+      <h1 class="finalTextBig">熊雅妮，我喜欢你❤️</h1>
+      <h2 id="days" class="days"></h2>
       <p id="loveText"></p>
     `;
     document.body.appendChild(overlay);
     setTimeout(()=> overlay.classList.add("finalFade"),100);
 
     hearts();
+    showDays();
     words();
   },2000);
 }
@@ -328,6 +392,70 @@ function hearts(){
     document.body.appendChild(h);
     setTimeout(()=>h.remove(),5000);
   },200);
+}
+
+// 天数
+let start = new Date("2016-12-19");
+let mode = "day"; // 当前显示模式
+
+function showDays(){
+  updateDays();
+
+  const el = document.getElementById("days");
+
+  // 点击切换模式
+  el.onclick = ()=>{
+    mode = (mode === "day") ? "full" : "day";
+    updateDays();
+    burstHearts();
+  };
+}
+
+function updateDays(){
+  let now = new Date();
+  let diff = now - start;
+
+  let totalDays = Math.floor(diff / (1000*60*60*24));
+
+  if(mode === "day"){
+    document.getElementById("days").innerHTML =
+      "我们已经一起走过 " + totalDays + " 天 ❤️";
+  } else {
+    // ===== 计算 年 + 天 + 小时 =====
+    let years = Math.floor(totalDays / 365);
+    let days = totalDays % 365;
+
+    let hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+
+    document.getElementById("days").innerHTML =
+      `我们已经在一起 ${years}年 + ${days}天 + ${hours}小时 ❤️`;
+  }
+}
+
+function burstHearts(){
+  for(let i=0;i<20;i++){
+    let h=document.createElement("div");
+    h.innerHTML="⭐";
+    h.style.position="fixed";
+    h.style.left="50%";
+    h.style.top="50%";
+    h.style.fontSize="20px";
+    h.style.zIndex=9999;
+
+    let angle=Math.random()*2*Math.PI;
+    let distance=100+Math.random()*200;
+
+    h.animate([
+      { transform:"translate(-50%,-50%) scale(1)", opacity:1 },
+      { transform:`translate(${Math.cos(angle)*distance}px, ${Math.sin(angle)*distance}px) scale(1.5)`, opacity:0 }
+    ],{
+      duration:800,
+      easing:"ease-out"
+    });
+
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(),800);
+  }
 }
 
 // ===== 情话 =====
